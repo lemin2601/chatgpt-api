@@ -92,6 +92,22 @@ export type Model = {
 }
 
 /**
+ * https://chat.openai.com/backend-api/conversations?offset=0&limit=20
+ */
+export type ConversionsJSONBody = {
+  offset: number
+  limit: number
+}
+
+/**
+ * https://chat.openapi.com/backend-api/moderations
+ */
+export type GenTitleJSONBody = {
+  conversation_id: string
+  message_id: string
+}
+
+/**
  * https://chat.openapi.com/backend-api/moderations
  */
 export type ModerationsJSONBody = {
@@ -104,9 +120,68 @@ export type ModerationsJSONBody = {
    * The model to use in the decision
    */
   model: AvailableModerationModels
+  conversation_id: string
+  message_id: string
 }
 
 export type AvailableModerationModels = 'text-moderation-playground'
+export type AvailableGenTitleModels = 'text-davinci-002-render'
+
+/**
+ * https://chat.openapi.com/backend-api/conversations
+ * {
+   "items":[
+      {
+         "id":"0ecb8e76-5960-4df6-80de-e1a7bb48c6ee",
+         "title":"New chat",
+         "create_time":"2022-12-22T19:11:10.519988"
+      },
+      {
+         "id":"b177a318-a3df-41a6-9216-03a41e75913e",
+         "title":"Hello",
+         "create_time":"2022-12-22T19:05:23.195647"
+      },
+      {
+         "id":"e39e5457-f2c0-4033-b825-8508011d30cd",
+         "title":"User request for assistance",
+         "create_time":"2022-12-22T18:52:38.625666"
+      },
+      {
+         "id":"a772bc03-b322-4c93-a3cd-175376ddf338",
+         "title":"Chào hỏi giúp đỡ",
+         "create_time":"2022-12-22T18:23:39.808559"
+      }
+   ],
+   "total":4,
+   "limit":20,
+   "offset":0
+}
+
+ */
+export type ConversationsItem = {
+  id: string
+  title: string
+  create_time: string
+}
+export type ConversationsJSONResult = {
+  /**
+   *  Title
+   */
+  items: ConversationsItem[]
+  total: number
+  limit: number
+  offset: number
+}
+
+/**
+ * https://chat.openapi.com/backend-api/conversation/gen_title/conversation_id
+ */
+export type GenTitleJSONResult = {
+  /**
+   *  Title
+   */
+  title: string
+}
 
 /**
  * https://chat.openapi.com/backend-api/moderations
@@ -304,6 +379,7 @@ export type ChatError = {
 }
 
 export type ChatResponse = {
+  id: string
   response: string
   conversationId: string
   messageId: string

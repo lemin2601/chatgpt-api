@@ -32,6 +32,9 @@ export abstract class AChatGPTAPI {
     opts?: types.SendMessageOptions
   ): Promise<types.ChatResponse>
 
+  // abstract sendModeration(input: types.ModerationsJSONBody): Promise<types.ModerationsJSONResult>
+  // abstract sendGenTitle(input: types.GenTitleJSONBody): Promise<types.GenTitleJSONResult>
+  // abstract sendConversions(input: types.ConversationJSONBody): Promise<types.ConversationsJSONResult>
   /**
    * @returns `true` if the client is authenticated with a valid session or `false`
    * otherwise.

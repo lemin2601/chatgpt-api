@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import * as types from './types'
 import { AChatGPTAPI } from './abstract-chatgpt-api'
+import { fetch } from './fetch'
 import { getBrowser, getOpenAIAuth } from './openai-auth'
 import {
   browserPostEventStream,

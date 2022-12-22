@@ -6,6 +6,7 @@ import * as types from './types'
 import { AChatGPTAPI } from './abstract-chatgpt-api'
 import { fetch } from './fetch'
 import { fetchSSE } from './fetch-sse'
+import { ModerationsJSONBody } from './types'
 import { markdownToText } from './utils'
 
 const KEY_ACCESS_TOKEN = 'accessToken'
@@ -175,7 +176,7 @@ export class ChatGPTAPI extends AChatGPTAPI {
    * @param opts.onProgress - Optional callback which will be invoked every time the partial response is updated
    * @param opts.abortSignal - Optional callback used to abort the underlying `fetch` call using an [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
    *
-   * @returns The response from ChatGPT
+   * @returns The response from ChatGPT 1
    */
   override async sendMessage(
     message: string,
@@ -218,14 +219,23 @@ export class ChatGPTAPI extends AChatGPTAPI {
 
     if (conversationId) {
       body.conversation_id = conversationId
+
+      const moderationJSONBody: types.ModerationsJSONBody = {
+        input: message,
+        conversation_id: conversationId,
+        message_id: parentMessageId,
+        model: 'text-moderation-playground'
+      }
+      const r = await this.sendModeration(moderationJSONBody)
+      console.log('sendModeration sending ', moderationJSONBody, r)
     }
 
     const result: types.ChatResponse = {
+      id: messageId,
       conversationId,
       messageId,
       response: ''
     }
-
     const responseP = new Promise<types.ChatResponse>((resolve, reject) => {
       const url = `${this._backendApiBaseUrl}/conversation`
       const headers = {
@@ -253,6 +263,7 @@ export class ChatGPTAPI extends AChatGPTAPI {
           try {
             const convoResponseEvent: types.ConversationResponseEvent =
               JSON.parse(data)
+            console.log('convoResponseEvent', convoResponseEvent)
             if (convoResponseEvent.conversation_id) {
               result.conversationId = convoResponseEvent.conversation_id
             }
@@ -296,6 +307,7 @@ export class ChatGPTAPI extends AChatGPTAPI {
           // the HTTP request has resolved cleanly. In my testing, these cases tend to
           // happen when OpenAI has already send the last `response`, so we can ignore
           // the `fetch` error in this case.
+          console.log('-------- here 2 ')
           return resolve(result)
         } else {
           return reject(err)
@@ -321,7 +333,7 @@ export class ChatGPTAPI extends AChatGPTAPI {
     }
   }
 
-  async sendModeration(input: string) {
+  async sendModeration(input: types.ModerationsJSONBody) {
     const accessToken = await this.refreshSession()
     const url = `${this._backendApiBaseUrl}/moderations`
     const headers = {
@@ -333,7 +345,9 @@ export class ChatGPTAPI extends AChatGPTAPI {
     }
 
     const body: types.ModerationsJSONBody = {
-      input,
+      input: input.input,
+      conversation_id: input.conversation_id,
+      message_id: input.message_id,
       model: 'text-moderation-playground'
     }
 
@@ -355,6 +369,78 @@ export class ChatGPTAPI extends AChatGPTAPI {
       }
 
       return r.json() as any as types.ModerationsJSONResult
+    })
+
+    return res
+  }
+
+  async sendGenTitle(input: types.GenTitleJSONBody) {
+    const accessToken = await this.refreshSession()
+    const url = `${this._backendApiBaseUrl}/conversation/gen_title/${input.conversation_id}`
+    const headers = {
+      ...this._headers,
+      Authorization: `Bearer ${accessToken}`,
+      Accept: '*/*',
+      'Content-Type': 'application/json',
+      Cookie: `cf_clearance=${this._clearanceToken}`
+    }
+
+    const body = {
+      message_id: input.message_id,
+      model: 'text-davinci-002-render'
+    }
+
+    if (this._debug) {
+      console.log('POST', url, headers, body)
+    }
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    }).then((r) => {
+      if (!r.ok) {
+        const error = new types.ChatGPTError(`${r.status} ${r.statusText}`)
+        error.response = r
+        error.statusCode = r.status
+        error.statusText = r.statusText
+        throw error
+      }
+
+      return r.json() as any as types.GenTitleJSONResult
+    })
+
+    return res
+  }
+
+  async sendConversions(input: types.ConversionsJSONBody) {
+    const accessToken = await this.refreshSession()
+    const url = `${this._backendApiBaseUrl}/conversations?offset=${input.offset}&limit=${input.limit}`
+    const headers = {
+      ...this._headers,
+      Authorization: `Bearer ${accessToken}`,
+      Accept: '*/*',
+      'Content-Type': 'application/json',
+      Cookie: `cf_clearance=${this._clearanceToken}`
+    }
+
+    if (this._debug) {
+      console.log('GET', url, headers)
+    }
+
+    const res = await fetch(url, {
+      method: 'GET',
+      headers
+    }).then((r) => {
+      if (!r.ok) {
+        const error = new types.ChatGPTError(`${r.status} ${r.statusText}`)
+        error.response = r
+        error.statusCode = r.status
+        error.statusText = r.statusText
+        throw error
+      }
+
+      return r.json() as any as types.ConversationsJSONResult
     })
 
     return res

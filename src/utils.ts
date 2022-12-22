@@ -145,6 +145,7 @@ export async function browserPostEventStream(
         function onMessage(data: string) {
           if (data === '[DONE]') {
             return resolve({
+              id: messageId,
               response,
               conversationId,
               messageId
@@ -215,6 +216,7 @@ export async function browserPostEventStream(
       // happen when OpenAI has already send the last `response`, so we can ignore
       // the `fetch` error in this case.
       return {
+        id: messageId,
         response,
         conversationId,
         messageId

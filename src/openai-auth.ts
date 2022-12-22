@@ -294,8 +294,8 @@ export async function getBrowser(
     '--mute-audio',
     '--disable-default-apps',
     '--no-zygote',
-    '--disable-accelerated-2d-canvas',
-    '--disable-web-security'
+    '--disable-accelerated-2d-canvas'
+    // '--disable-web-security',
     // '--disable-gpu'
     // '--js-flags="--max-old-space-size=1024"'
   ]
