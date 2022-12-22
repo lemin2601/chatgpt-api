@@ -167,7 +167,7 @@ export async function getOpenAIAuth({
         await delay(1000)
       } else {
         await page.waitForSelector('#username')
-        await page.type('#username', email, { delay: 20 })
+        await page.type('#username', email)
         await delay(100)
 
         // NOTE: this is where you may encounter a CAPTCHA
@@ -418,33 +418,17 @@ export async function initializeNopechaExtension(
       if (extensionId) {
         const extensionUrl = `chrome-extension://${extensionId}/popup.html`
         await page3.goto(extensionUrl, { waitUntil: 'networkidle2' })
-        await delay(500)
-
         const editKey = await page3.waitForSelector('#edit_key .clickable')
         await editKey.click()
 
-        const settingsInput = await page3.waitForSelector('input.settings_text')
-        // console.log('value1', )
-
-        const value = await settingsInput.evaluate((el) => el.value)
-        if (value !== nopechaKey) {
-          await settingsInput.evaluate((el) => {
-            el.value = ''
-          })
-          await settingsInput.type(nopechaKey)
-
-          // console.log('value2', await settingsInput.evaluate((el) => el.value))
-          await settingsInput.evaluate((el, value) => {
-            el.value = value
-          }, nopechaKey)
-
-          // console.log('value3', await settingsInput.evaluate((el) => el.value))
-          await settingsInput.press('Enter')
-          await delay(500)
-          await editKey.click()
-          await delay(2000)
+        for (let i = 0; i <= 30; i++) {
+          await page3.keyboard.press('Backspace')
         }
 
+        await page3.keyboard.type(nopechaKey)
+        await delay(1000)
+        await page3.keyboard.press('Enter')
+        await delay(1000)
         console.log('initialized nopecha extension with key', nopechaKey)
       } else {
         console.error(
