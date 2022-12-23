@@ -34,6 +34,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
   protected _page: Page
   protected _proxyServer: string
 
+  protected _sessionToken: string
+  protected _clearanceToken: string
+
   /**
    * Creates a new client for automating the ChatGPT webapp.
    */
@@ -67,6 +70,12 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
 
     /** @defaultValue `undefined` **/
     proxyServer?: string
+
+    /** @defaultValue `undefined` **/
+    sessionToken?: string
+
+    /** @defaultValue `undefined` **/
+    clearanceToken?: string
   }) {
     super()
 
@@ -81,7 +90,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       captchaToken,
       nopechaKey,
       executablePath,
-      proxyServer
+      proxyServer,
+      sessionToken,
+      clearanceToken
     } = opts
 
     this._email = email
@@ -96,6 +107,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
     this._nopechaKey = nopechaKey
     this._executablePath = executablePath
     this._proxyServer = proxyServer
+
+    this._sessionToken = sessionToken
+    this._clearanceToken = clearanceToken
 
     if (!this._email) {
       const error = new types.ChatGPTError('ChatGPT invalid email')
@@ -157,14 +171,18 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       this._page.on('response', this._onResponse.bind(this))
 
       // bypass cloudflare and login
-      await getOpenAIAuth({
+      const authInfo = await getOpenAIAuth({
         email: this._email,
         password: this._password,
         browser: this._browser,
         page: this._page,
         isGoogleLogin: this._isGoogleLogin,
-        isMicrosoftLogin: this._isMicrosoftLogin
+        isMicrosoftLogin: this._isMicrosoftLogin,
+        sessionToken: this._sessionToken,
+        clearanceToken: this._clearanceToken
       })
+      this._sessionToken = authInfo.sessionToken
+      this._clearanceToken = authInfo.clearanceToken
     } catch (err) {
       if (this._browser) {
         await this._browser.close()
@@ -340,6 +358,14 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
     }
   }
 
+  getSessionToken() {
+    return this._sessionToken
+  }
+
+  getClearanceToken() {
+    return this._clearanceToken
+  }
+
   async getIsAuthenticated() {
     try {
       if (!this._accessToken) {
@@ -426,9 +452,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       parentMessageId = uuidv4(),
       messageId = uuidv4(),
       action = 'next',
-      timeoutMs
+      timeoutMs,
       // TODO
-      // onProgress
+      onProgress
     } = opts
 
     const url = `https://chat.openai.com/backend-api/conversation`
@@ -476,7 +502,21 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       }
 
       try {
-        // console.log('>>> EVALUATE', url, this._accessToken, body)
+        // console.log(new Date(), '>>> EVALUATE', url, this._accessToken, body)
+        if (!isNaN(+timeoutMs)) {
+          this._page.setDefaultTimeout(timeoutMs)
+        } else {
+          this._page.setDefaultTimeout(0)
+        }
+        if (onProgress) {
+          console.log(new Date(), '>>> setting onProgress')
+          // var myFunc = function(res) {
+          //   console.log("lol");
+          //   onProgress(res);
+          // };
+          await this._page.exposeFunction('___onProgress', onProgress)
+        }
+
         result = await this._page.evaluate(
           browserPostEventStream,
           url,

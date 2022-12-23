@@ -5,14 +5,20 @@ import * as url from 'node:url'
 
 import delay from 'delay'
 import { TimeoutError } from 'p-timeout'
-import { Browser, Page, Protocol, PuppeteerLaunchOptions } from 'puppeteer'
+import {
+  Browser,
+  HTTPResponse,
+  Page,
+  Protocol,
+  PuppeteerLaunchOptions
+} from 'puppeteer'
 import puppeteer from 'puppeteer-extra'
 import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import random from 'random'
 
 import * as types from './types'
-import { minimizePage } from './utils'
+import { isRelevantRequest, minimizePage } from './utils'
 
 puppeteer.use(StealthPlugin())
 
@@ -59,7 +65,9 @@ export async function getOpenAIAuth({
   nopechaKey = process.env.NOPECHA_KEY,
   executablePath,
   proxyServer = process.env.PROXY_SERVER,
-  minimize = false
+  minimize = false,
+  sessionToken,
+  clearanceToken
 }: {
   email?: string
   password?: string
@@ -73,6 +81,8 @@ export async function getOpenAIAuth({
   nopechaKey?: string
   executablePath?: string
   proxyServer?: string
+  sessionToken?: string
+  clearanceToken?: string
 }): Promise<OpenAIAuth> {
   const origBrowser = browser
   const origPage = page
@@ -96,118 +106,194 @@ export async function getOpenAIAuth({
         await minimizePage(page)
       }
     }
+    let hadSendSessionAuth = false
+    const _onResponse = async (response: HTTPResponse) => {
+      const request = response.request()
+      const url = response.url()
+      if (!isRelevantRequest(url)) {
+        return
+      }
+      const status = response.status()
 
-    await page.goto('https://chat.openai.com/auth/login', {
-      waitUntil: 'networkidle2'
-    })
-
-    // NOTE: this is where you may encounter a CAPTCHA
-    await checkForChatGPTAtCapacity(page, { timeoutMs })
-
-    if (hasRecaptchaPlugin) {
-      const captchas = await page.findRecaptchas()
-
-      if (captchas?.filtered?.length) {
-        console.log('solving captchas using 2captcha...')
-        const res = await page.solveRecaptchas()
-        console.log('captcha result', res)
+      // console.log('\nresponse custom', {
+      //   url
+      // })
+      if (url.endsWith('api/auth/session')) {
+        if (200 === status || status === 401 || status === 403) {
+          hadSendSessionAuth = true
+        }
       }
     }
+    page.on('response', _onResponse)
 
-    // once we get to this point, the Cloudflare cookies should be available
+    await page.goto('https://chat.openai.com/chat', {
+      // waitUntil: 'networkidle2',
+      waitUntil: 'load'
+    })
 
-    // login as well (optional)
-    if (email && password) {
-      await waitForConditionOrAtCapacity(page, () =>
-        page.waitForSelector('#__next .btn-primary', { timeout: timeoutMs })
-      )
-      await delay(500)
+    if (
+      clearanceToken &&
+      sessionToken &&
+      clearanceToken !== '' &&
+      sessionToken !== ''
+    ) {
+      const cookiesCache = [
+        {
+          name: '__Secure-next-auth.session-token',
+          // 'value': 'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..HMOYeDp3ZWnsQ3vF.RGRGGV6Of-A1bpp9SWVss0RZUmne28x72_YuDjS6PVHa42aQlPxkwdKvhr3iv9le--6wGU94mUkfcN7vMQ4VcBCVKQo06swlaHiNh8uNNgmsscpFCAYtTSz15u7CMQeTUMYKSSQ0gho_5bjstorOizBubq51t1ibfx2jjzX99m_cISsIZKxkwvDhjE0mj6eP19kL_gyCbl0JwpHL5xebqi8lwL2nXuupCUixVJmTNnnaXT_htJ1V7sY8FzWOM7dgj-g1IOiS_dahlt4dzvvTzz5jY2f_-JdKlN0e5mWPKwQxyGGJGVGOrN7oM5zJ2mX9eFK9QL5ZBzzY4aNqczjdYa9b4SGdGZpozbymbumf2mNFzPuN21WU4Bhtj0VVtzoKLYa3IZZcvQN1rMXlJNCDwhHRAWifCwu29lxH8cf5OMkAHVtbPQhbnpW1delpUa99PkwCHH_hkFxK0MhGnKv3ZWTKZ1UX3CEZALljHkbz0mV8HmnjbVHlzkTNv5xyXlz0YEYn6pyrZRMapOZwxMdE9CJduBpA3Rjvnmisb2RBaLBKKUI5t1D_4vb5Lv_CVJ1voK0QAGdRHUwed89pOHeS_PG57LNnTex8d5m02uZFzHTueoAtKKEEpXGkj7J5eijgpCh5riqRVjGafYPRhtuX6h8V5Z9taViVww-cFYnP_6syK8SVAq-NJwqrZ_CZN520jYmFrf9B5A2fjg0EJ5BwzP5r_G3ktiW-X9wVcwOREmf3wrE4VyPAaKqceQlLsj0KK6yo49ZhU3ZS7t1prAdk-ud2KJKVYGJSWuB6kTUHXmXKCv7fBq-oWM8_IKXXJlACoFG2ebqaoUewzEpBGbPsOQr4ihgkygTgKJTLcOKRq8RsktSWYm5p8oXO0elF4Pz2wETF5TZWbE29yVPCUkB1-hZHs8kKq5Whpe6AWWVQL04x_vY_dr2bzDh_h4vtBYMoTsiflokSSv8Lvo1w_A0iZ9_agrQ1_o0a6GeNPvNi9wVJPANbEGtAhE-ikoZhxEyX3eNVYnjtjo1AhhuYEfYOExEzOL1gFcV6Lh85UPV21yk7BbpVLwFUxS9iM2FSMuPxsjEacajSRy4Si6qB1OOA3cXSZwAIHAS3GalxX3gHmYRRas1tMtDSRl5wmWuI37DN-7Iossbbfv_VqEbu77geockuFZhX_LCt4jCgchgq_kBD-6OjjgFNkMs7Ns4lsqrLxknHn4km6-DqBGd0yb_Iik_UMLoTlufbAHeM-uCTb62q_tXNmrOggUPrkjdzQKgB61XqOmKEdKrPw_dqKcL4RlsxCd6V1DHh_JYSm-A1UaSofadS6FsZCFjEJufBge3yZlkYXm9xg4i2EwsF86zsuqXe47xvDHD4mb3GVEV7zLcXm6kDzThHLFbvOPO4DpCmKdo-TnQuXRYIepkMp1q_bxe9MroshoRn4NEOkaHVRHHsttcgrH2vb9nvCqSddaaosmYFLsqwoEenSwv0SHyHTbo8MMdVoB_nCLRIqncxKn6TGw8IhCODUucXjoA3SpChnP5mQs5tHHDJEQbkmhrDQDTEUHcQHdsC1kZhdA07wUwG4nE4pttgi0GUbRGGfTIY2Oj9CfAvsKt0Up0l19NEGQzCSSiqsupdXByD2LkVTl_tpqBOLOrozqedT52NOLjinfIsvv1T2JnCBT8ELZyzV7yCAoxrVbXfGZEmpWZ2ZEf3ROvHjdAFQekrC8NZDeJVs4s0i1wmD72LbUXeOj4O0DEtM38cW2mxo3MrOLjXn-TWZ9S0UZrchH2gyn7faK3kaY-UVdGQkqExoQJdMX34SlGhbxtoFG9vGMVccbuah2uVnAAsuU9CIBTRjkuV4HePdsphH79QtL5a26xP6cDG9YDAPJfbLWufRH98SCVXfPtOoGtXGbgwjBsLcf2fkyRHgWjx0vFfRqPsDojOryA3akLggW3BG6-7LpGJIOQurgtMnN8uc4ysOZkksaH1iL02OyL7sUDHPNWbPvzpcmfYlwVxeyt7XYO6wspKpJS7nxW8iev-e3w_CDY2Jz99SjQHZ5iOIhs9NqZvmqZSdDOKHRQ3XXoivdBNAsJ1r05tqiV2HKp5L9tJEDjpQnzAhSpklCkEecSOOtb6AMIFekjMQflXp85chyFWEO7PZh6dP-pAzvEEmLjiWy-bM_b__Jyrh6uYfTUyTb4O7OONd_XrziuTcu0cNW47B7wPwfPdVqnNhBTfetTuVM16pkKfoDJYp-8Hxd5Gr39Oo_dV5iSax0-aaUHbVlUs6m4dyiObnQ9MRp-0_lvh2VaxxdVUw9rCz8Yr0f8G6TOOHpXXVnn64XGCA79RSaPU2UcNMTln-IiOjX4V3RR4u6CFu6Q.91A-MssgjBc2H7b75m3mjQ'
+          value: sessionToken + ''
+        },
+        {
+          name: 'cf_clearance',
+          // 'value': 'OUeS33aFRlVmYkglhi4BR7wXnvZw7wgiI.b1UsDh1G0-1671767188-0-1-26d6bae3.222baa73.31ca379-160'
+          value: clearanceToken + ''
+        }
+      ]
+      await page.setCookie(...cookiesCache)
+    }
+    const url = await page.url()
+    console.log('url', url)
 
-      // click login button and wait for navigation to finish
-      await Promise.all([
-        page.waitForNavigation({
-          waitUntil: 'networkidle2',
-          timeout: timeoutMs
-        }),
+    console.log('Waiting load browser chat.openai.com')
+    let time = Date.now()
+    await waitFor(() => {
+      if (Date.now() - time > 2 * 60 * 1000) {
+        throw 'A timeout occurred 524'
+      }
+      console.log(new Date(), 'waitFor', hadSendSessionAuth)
+      return hadSendSessionAuth
+    })
+    console.log('Waiting load browser chat.openai.com done ', Date.now() - time)
 
-        page.click('#__next .btn-primary')
-      ])
+    await checkForChatGPTAtCapacity(page, { timeoutMs })
 
+    page.off('response', _onResponse)
+
+    await delay(1000)
+
+    const urlAfter = await page.url()
+    console.log('urlAfter', urlAfter)
+
+    if (urlAfter.startsWith('https://chat.openai.com/auth/login')) {
+      // await page.goto('https://chat.openai.com/auth/login', {
+      //   waitUntil: 'networkidle2'
+      // })
+      console.log('progress login with email & password')
+
+      // NOTE: this is where you may encounter a CAPTCHA
       await checkForChatGPTAtCapacity(page, { timeoutMs })
 
-      let submitP: () => Promise<void>
+      if (hasRecaptchaPlugin) {
+        const captchas = await page.findRecaptchas()
 
-      if (isGoogleLogin) {
-        await page.click('button[data-provider="google"]')
-        await page.waitForSelector('input[type="email"]')
-        await page.type('input[type="email"]', email, { delay: 10 })
-        await Promise.all([
-          page.waitForNavigation(),
-          await page.keyboard.press('Enter')
-        ])
-        await page.waitForSelector('input[type="password"]', { visible: true })
-        await page.type('input[type="password"]', password, { delay: 10 })
-        submitP = () => page.keyboard.press('Enter')
-      } else if (isMicrosoftLogin) {
-        await page.click('button[data-provider="windowslive"]')
-        await page.waitForSelector('input[type="email"]')
-        await page.type('input[type="email"]', email, { delay: 10 })
-        await Promise.all([
-          page.waitForNavigation(),
-          await page.keyboard.press('Enter')
-        ])
-        await delay(1500)
-        await page.waitForSelector('input[type="password"]', { visible: true })
-        await page.type('input[type="password"]', password, { delay: 10 })
-        submitP = () => page.keyboard.press('Enter')
-        await Promise.all([
-          page.waitForNavigation(),
-          await page.keyboard.press('Enter')
-        ])
-        await delay(1000)
-      } else {
-        await page.waitForSelector('#username')
-        await page.type('#username', email)
-        await delay(100)
-
-        // NOTE: this is where you may encounter a CAPTCHA
-        if (hasNopechaExtension) {
-          await waitForRecaptcha(page, { timeoutMs })
-        } else if (hasRecaptchaPlugin) {
+        if (captchas?.filtered?.length) {
           console.log('solving captchas using 2captcha...')
           const res = await page.solveRecaptchas()
-          if (res.captchas?.length) {
-            console.log('captchas result', res)
-          } else {
-            console.log('no captchas found')
-          }
+          console.log('captcha result', res)
         }
-
-        await delay(1200)
-        const frame = page.mainFrame()
-        const submit = await page.waitForSelector('button[type="submit"]', {
-          timeout: timeoutMs
-        })
-        frame.focus('button[type="submit"]')
-        await submit.focus()
-        await submit.click()
-        await page.waitForSelector('#password', { timeout: timeoutMs })
-        await page.type('#password', password, { delay: 10 })
-        submitP = () => page.click('button[type="submit"]')
       }
 
-      await Promise.all([
-        waitForConditionOrAtCapacity(page, () =>
+      // once we get to this point, the Cloudflare cookies should be available
+
+      // login as well (optional)
+      if (email && password) {
+        await waitForConditionOrAtCapacity(page, () =>
+          page.waitForSelector('#__next .btn-primary', { timeout: timeoutMs })
+        )
+        await delay(500)
+
+        // click login button and wait for navigation to finish
+        await Promise.all([
           page.waitForNavigation({
             waitUntil: 'networkidle2',
             timeout: timeoutMs
+          }),
+
+          page.click('#__next .btn-primary')
+        ])
+
+        await checkForChatGPTAtCapacity(page, { timeoutMs })
+
+        let submitP: () => Promise<void>
+
+        if (isGoogleLogin) {
+          await page.click('button[data-provider="google"]')
+          await page.waitForSelector('input[type="email"]')
+          await page.type('input[type="email"]', email, { delay: 10 })
+          await Promise.all([
+            page.waitForNavigation(),
+            await page.keyboard.press('Enter')
+          ])
+          await page.waitForSelector('input[type="password"]', {
+            visible: true
           })
-        ),
-        submitP()
-      ])
+          await page.type('input[type="password"]', password, { delay: 10 })
+          submitP = () => page.keyboard.press('Enter')
+        } else if (isMicrosoftLogin) {
+          await page.click('button[data-provider="windowslive"]')
+          await page.waitForSelector('input[type="email"]')
+          await page.type('input[type="email"]', email, { delay: 10 })
+          await Promise.all([
+            page.waitForNavigation(),
+            await page.keyboard.press('Enter')
+          ])
+          await delay(1500)
+          await page.waitForSelector('input[type="password"]', {
+            visible: true
+          })
+          await page.type('input[type="password"]', password, { delay: 10 })
+          submitP = () => page.keyboard.press('Enter')
+          await Promise.all([
+            page.waitForNavigation(),
+            await page.keyboard.press('Enter')
+          ])
+          await delay(1000)
+        } else {
+          await page.waitForSelector('#username')
+          await page.type('#username', email)
+          await delay(100)
+
+          // NOTE: this is where you may encounter a CAPTCHA
+          if (hasNopechaExtension) {
+            await waitForRecaptcha(page, { timeoutMs })
+          } else if (hasRecaptchaPlugin) {
+            console.log('solving captchas using 2captcha...')
+            const res = await page.solveRecaptchas()
+            if (res.captchas?.length) {
+              console.log('captchas result', res)
+            } else {
+              console.log('no captchas found')
+            }
+          }
+
+          await delay(1200)
+          const frame = page.mainFrame()
+          const submit = await page.waitForSelector('button[type="submit"]', {
+            timeout: timeoutMs
+          })
+          frame.focus('button[type="submit"]')
+          await submit.focus()
+          await submit.click()
+          await page.waitForSelector('#password', { timeout: timeoutMs })
+          await page.type('#password', password, { delay: 10 })
+          submitP = () => page.click('button[type="submit"]')
+        }
+
+        await Promise.all([
+          waitForConditionOrAtCapacity(page, () =>
+            page.waitForNavigation({
+              waitUntil: 'networkidle2',
+              timeout: timeoutMs
+            })
+          ),
+          submitP()
+        ])
+      } else {
+        await delay(2000)
+        await checkForChatGPTAtCapacity(page, { timeoutMs })
+      }
     } else {
-      await delay(2000)
-      await checkForChatGPTAtCapacity(page, { timeoutMs })
+      console.log('progress login with cache token')
     }
 
     const pageCookies = await page.cookies()
@@ -634,4 +720,10 @@ async function waitForRecaptcha(
       await delay(pollingIntervalMs)
     } while (true)
   }
+}
+
+let sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+let waitFor = async function waitFor(f) {
+  while (!f()) await delay(1000)
+  return f()
 }

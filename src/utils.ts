@@ -8,6 +8,7 @@ import { remark } from 'remark'
 import stripMarkdown from 'strip-markdown'
 
 import * as types from './types'
+import { ChatResponse } from './types'
 
 export function markdownToText(markdown?: string): string {
   return remark()
@@ -74,11 +75,13 @@ export async function browserPostEventStream(
   url: string,
   accessToken: string,
   body: types.ConversationJSONBody,
-  timeoutMs?: number
+  timeoutMs?: number,
+  onProgress?: (partialResponse: ChatResponse) => void
 ): Promise<types.ChatError | types.ChatResponse> {
   // Workaround for https://github.com/esbuild-kit/tsx/issues/113
   globalThis.__name = () => undefined
 
+  console.log(new Date(), 'browserPostEventStream calling')
   class TimeoutError extends Error {
     readonly name: 'TimeoutError'
 
@@ -143,6 +146,7 @@ export async function browserPostEventStream(
     const responseP = new Promise<types.ChatResponse>(
       async (resolve, reject) => {
         function onMessage(data: string) {
+          // console.log('>>> onMessage', data)
           if (data === '[DONE]') {
             return resolve({
               id: messageId,
@@ -167,6 +171,18 @@ export async function browserPostEventStream(
               convoResponseEvent.message?.content?.parts?.[0]
             if (partialResponse) {
               response = partialResponse
+            }
+            // @ts-ignore
+            if (window.___onProgress) {
+              console.log('>>> onProgress callback', response)
+
+              // @ts-ignore
+              window.___onProgress({
+                id: messageId,
+                response,
+                conversationId,
+                messageId
+              })
             }
           } catch (err) {
             console.warn('fetchSSE onMessage unexpected error', err)
