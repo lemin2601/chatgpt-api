@@ -509,7 +509,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
           this._page.setDefaultTimeout(0)
         }
         if (onProgress) {
-          console.log(new Date(), '>>> setting onProgress')
+          // console.log(new Date(), '>>> setting onProgress')
           // var myFunc = function(res) {
           //   console.log("lol");
           //   onProgress(res);

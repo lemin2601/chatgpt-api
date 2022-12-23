@@ -158,9 +158,10 @@ export async function getOpenAIAuth({
     let time = Date.now()
     await waitFor(() => {
       if (Date.now() - time > 2 * 60 * 1000) {
-        throw 'A timeout occurred 524'
+        // throw 'A timeout occurred 524'
+        return true
       }
-      console.log(new Date(), 'waitFor', hadSendSessionAuth)
+      // console.log(new Date(), 'waitFor', hadSendSessionAuth)
       return hadSendSessionAuth
     })
     console.log('Waiting load browser chat.openai.com done ', Date.now() - time)
