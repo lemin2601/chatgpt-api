@@ -108,7 +108,7 @@ export async function browserPostEventStream(
   let conversationId: string = body?.conversation_id
   let messageId: string = body?.messages?.[0]?.id
   let response = ''
-
+  let sendMessageId = messageId
   try {
     console.log('browserPostEventStream', url, accessToken, body)
 
@@ -149,7 +149,7 @@ export async function browserPostEventStream(
           // console.log('>>> onMessage', data)
           if (data === '[DONE]') {
             return resolve({
-              id: messageId,
+              id: sendMessageId,
               response,
               conversationId,
               messageId
@@ -178,7 +178,7 @@ export async function browserPostEventStream(
 
               // @ts-ignore
               window.___onProgress({
-                id: messageId,
+                id: sendMessageId,
                 response,
                 conversationId,
                 messageId
@@ -232,7 +232,7 @@ export async function browserPostEventStream(
       // happen when OpenAI has already send the last `response`, so we can ignore
       // the `fetch` error in this case.
       return {
-        id: messageId,
+        id: sendMessageId,
         response,
         conversationId,
         messageId

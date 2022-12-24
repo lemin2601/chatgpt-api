@@ -12,34 +12,44 @@ dotenv.config()
  * npx tsx demos/demo.ts
  * ```
  */
+//__cf_chl_tk=cfPbqzHn8huOGK34h0q6daXcOasTZ7LzCq2qO8Jz7Do-1671786672-0-gaNycGzNCKU
 async function main() {
   const email = process.env.OPENAI_EMAIL
   const password = process.env.OPENAI_PASSWORD
 
-  let sessionToken =
-    'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..fKgcBblZk8gdZOtx.aEzvu7nyHz8TcoEa5R1CU8MzwL5sJ_0hqU0P3k43d9t_fehs3huKXQxSNPFF6Je91L1PcI0EiZb6U212gPuCHwZxNYa3_BHQbIW1ZYeLmIE14-OpdGGTIBfzAmqnDdFY07Qn3XyahOORGyrOU8goyDT6iDPOJVWRP2s0R9lqB9NnRO7iO7C8AmxHx85Ipam_I9UWN8z9ov1O5u5P5EKpQX3E8KtreBlONm_41b1XXkja1pkj8smhBxbeOfcUr9bBj9-oTQdXJfAURJbUaqtomV6boptxDZ2K66BgLnX3Eb57ivaH2hTJAN2iQPFjT_VcoJhSCyHhl2kRzqEYxsLxp4qmUNqWECTiDwXll4lUzynYzhDLEvN-F9mmCcqEf-ASPaDml5x3gniY4iwmaWb95JoYz11vsZnu-ZiNtm6Z2duc5VEUPBzxdZUigF5Va18ZbgdHN9iSZlADXWA9BBG6eJ-3pYWTBv7PWcY_C3KuAmaVbR9APWsPRv9R_2X0Dwr11uFiHlFgXk6lg8v6As7CqL6MbcWXZ0WMy4Uf_3jwIXJzzb571FjoLAVcu2XgC4lqvldDwWizjWuJCpWA3ihZCBt7zhGZHQIZtPjQPuqm_QGhr6RQ8A7PJIXN3t4Dc6pWX3Ih8gk6aTcM_IJRcXivtAecXUbV62ahvhEOwRmBS9DGRivpf6TtbtKF1TS3eFRCBayqIQrIkuVBdWobR7EyaS4nKJnk07fMsBc752QzZOzFdxkpLBJJdi0MokBE7HEKEo7J1atlalztfmO1ZiiQVV62_PbWvTDsPgpLngLHpuEqmKBVd9NNFqb-tPFkxTrp7sgsgp3FvO_DOtqlQa3i-q_yr7Nw3CspzcFuGZDIoAssFh3aAyvfMxcbvDMnqw3QYZSzlrFqSCJrmS8rzvc5NJwKV1KPKPChzFRSDtm5zEZcpqtg57O-B5DUf2C_giPWjxtCzMfvJ9AGbY4w7XN-8TR3ccoi60LC2f7eLCVYs30CEzfRjVul9F6SnLYY_Uo8Kpb-Z9En5RCGIi8Mq1dj2IUuAmkFDrGhkkdGU_-YP9SCZiF_GnuKp8LMDXEvdUnrJkHuXnBl9vsMopPzk7K105quxrnhBNebMhSxfEX8ht3SHXhsu2fRExfkPPSf0duJ-qu16rIBTGDmP67ZNTTXqQYh14mm6dnetE6V0U2JCz1S4CoyBvwm7j90BBTZ6P0NPxNKfCbFZBqFL7eL1G7ZH5pvg_OnpYkhiKZ7Mjuf6Hv-Lu9PjT8QuF3JYW-qkqHWDXl-rupaRF-fxp_rnPEG1nW4vgsgeFvBN-qX6Wg5HEPFnzvTGoebEqLtQP8J_p64KOaFQB1ADLG16BLTfafebx8BK96PGdW_VUQ8BkuIcFinsuVKlPFoUY2I5BKX-uHWWrGgWF_HmDjl2_m2dpxFx7dskymh9oQyzCKE19ii4MrwnFfdGrBX9EOPJuE5ulxEyg9hbyILMDRMTRKJqT2Sw7F27XGy8TmDLsgg68GtVqIa9tb4Jvo94WNGbVx2-hWqITtO3P8PF8xLjRKFUsOC8v7WRenOG0LoE1rhbX-TTaODNhtVuMS8Xn6JR1CyqKvuQ0YstyDsncVSoJa_A9ymeVA653HAs1y4n5WfQ2aXeYC-Qt7albXJeQs4O9AmxdoeIuLC45VD7i5q6k-gA9k_2Qgv15ndKigyucazuVS62OviDGSklzm-9NXmhznTVefqApg-4ZyVUKeIfSquADUgddtTIEXGmT3XMxWXFoGd91OvJNNczPznyeQ_eBBwWsmrfEEM6K25KjIKzMnvZOYJQnybA7P2cMVatqK-qKqcyjXLt4ha2iJMWdFCZ4tW45hYMWS7KrhbWHV6ehffzPDLIIAPica5wEVqpUiD3RzSpflRzEHrU_X9P81v96Avyze5SgrNvQKg7_cHeVwHblvtawkL_RDTlyGduUZ83E3PMMeBlt7PWvoaLAXBlYGavJkewXJXdotYCnmS5BWlE95nLJqNdGA61f_T288zUEnB0wjJ0elnf0mC_XAoxFcaSyk5oBsIX7AGPXQA1xmQ7H_RhnUQFNgfnwmw0AU6bUgHe0Sto8xLzme6XwwnDsb6uGv4uor8UR0xav7UvCxmLYnMzsN2McQA42DMDSYIruXkf7MdIuouHQ6fQnxX88BVElfcPMQDer3MuaEl59Jv6gvgHfGizlKmF9rOY1EEpXbOfg7OiGTU--e0cnLoBMZFE_Gyyg2fPVOQtLGR1Jeknt8qqGuzEA79mKha3t2vIZ9VwyC7MDIFTaTXDfDurQm8i0XJtpWSAiN3WtfKwegeGteMGQOGhqSYaiiR7kMNz588T5XUbEQ1hFkIBMLJ49o.2Tb83r8Hpcc7Lo7IoVZqDQ'
-  let clearanceToken =
-    'l_r5juobBCHUnDO4F.B_YZm_CAGGG3PBvYQzt6FAsj0-1671775027-0-1-26d6bae3.222baa73.31ca379-160'
+  let { sessionToken, clearanceToken } = {
+    clearanceToken:
+      'BBHOprTZe3qoDrerg4owgMz_91OjfSn_PFGURM_lUcg-1671793413-0-1-26d6bae3.222baa73.31ca379-160',
+    sessionToken:
+      'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..xdxtqIzOXd75fl1G.2K-6WNyLpX__kww1hzRTvsiv7pgj7BB_YOkZratSic5_6HezoaSeA5P0xau8k0xtgyMSrim4ZzdhWvZq5k52xEQlfy26uDJZXhdTUp6U7xtVwkCBbGPXAOIElEQkFj9-LUDWnHgLWetm5mGVUuoB_ggVf1BYUSpIRRkgdIin9OXxicYDvZ1tacoBZ0Kpn6JTH9BZKh12_CyxoddWwjSBuqduG23a_1rvLDWwcddMis4Yv0SWm1FLZP4DGLwpyJ_IXo69eLU9RN2CTx-LHSiEB2qHUXr3PcWQ3LwRO-ttAhtHmJj03eo5FNEB1_skweapwPpSyiTE-gt-whJL4YG_5pigetS-I4fwn1FUEPNVHUJr3xL6TDKroFwZH_K0M2zZ__lNMktq4I8scBSZIFtdeaS1OXJL-pA8YHP_QwlPewQ4i7Vx-oOZbhxTVNXpqOas4Xd-ADC8upm0v_vCPg7Le9DPQse0bKk4enexw-VP9MhB1UQVIa4PVLAyrFnc9nGGUco6yA6YD7HbNhMPYXj4nmFGzmhwPs6XaKkeSFs9WM-kFY36SbEI190f17Js9PdmzWT3wEcppW2Wl4QGoIj3zvGNteXiAqslkEp8bzZG0XLnf5wbDT6YVMKcZH1n1BT7H5BYfAaiMuxj157grZ4h7gF8TeAxWPdKdne8NE5I2OW-zPuT00NHh_wBlnDJbaw2LoT4PgrhI-AvmKjs2xrHZBDtW7ilQA1f4YGR11LU5g2eZk-PVGXqhjMuWTgVCIXsHe1gAjy0dN9USdfcMuulSquMGzglxhciNndpR3DolZe8RiImVD6z7et7JzmbHEY4UyDqvMfrS0Z0diaFE_FzqmBGw6bfTOQM3dGhmUgii1TMgNyWFTyDA6Xdt_UQYrbMVzeE6aSQqh0ffxjc_z8OCv2msAbDryl-agFP_L1kL5c_f1HiNtU_A74byksScnLMkyycV5U9LODAhZhpMGoI1QdWxLfQwOsh9Z-rknMjImqawkd3JWjQGne9mBD5bQIEu0kekbyJm7D4qHhj4hNxG3lqlTq0TIJm3B7bDKe4thZX4yduYV-OmzC4JM3jiSQtisY0wuzHRoAcASVHPb2kMOYx1bVXqhQseWtBIHhth2MJqX9WrBUb9-EWfuPG1FgXow9cGZ1j07Eek5BDzpPqfXA0OfI5eO_MdMbqk7JezvXLwUMvljbU9xWp4R__hCYHXUQ3vw1F0Z7NUihdxM0luMGs9T7BxGDy6LED1SzkzQudpimCvRCMfEgJexaRi5FYCpSiGrDWv17vsJTI8rRuGxYBiFLDU9qva4l9Opx01ow21k6CPgoXGJtGIQwP26HB-geuCziGtHUsPvWUdQv-OntwlYORP-2czBeQUCtYVFFlnZFAeqU8GnhqJDMTGGM3Nt9u7_yP6ch54QSGU0IP4sxhbkX-haXCrT6k6Om39xEZcF9O25nRORPDrtBeLOz-vmsKk5W6bleUIJ26qEwPZ-3WR9HQhHka2IRktSseE6T6jO5FC0Y-WC4rXY4DFeO10KLU5lQNcsCy2rsj08ftxYC6DStUK9fD2FFkI4G1GW4xcKpHuK2xLxv8I53i8APALjka88_DzD3fCLIqwgZFpMASu5CN8w3DrshVSxsWKSQdsbuYi-ERqcyKxH0JwstT5Rb28vZq8ONuZ2CNNxeo4LlCZjEVqJK1ck1LP_BII0PeOvWUP7LZ9TPaTI6AoiaL_-Pd_C5fqZkT17JYixPbteM8wSyTjJSL_DaE6pOsOPNHAs1ZaHdaWFxIJSC5Vs6D643wcEj8WjUeD-iGqcIB27E1w6kfkqU6BsGHbbC3MgYCZHNtlef-SJE10yMAsWnyauLJ2UTq_hgTSPnXkCxxQvG1iXTrLdq6JBjq5BrHYdXSkmXWngiIpxuiOK2uLQFDguF2XQuSJLGNZuzSuqKY0JjUtCx7sDAeskm-1jdXjr3KfgtXcwX5zzdS0YJ-KNN7Xu2HHa9a4TsYgCYLBZB6n0ziKfAkGUIOzmQDfAfyAFv8Czchcnaz4JYfTcApnPFmgG39N-gsLB7aCWN7a77-UYMWk4OGZimsl0vTBInvJzAJ-O21B-XpdnoCnWUIhTkZciMiRRBc-JcdM6b5MjwiZQUdsdSDrlfRtd-2HiVCsR3csM90vWxroSlxV7BdousY_oHOsoQKJsiG0QGn630uysfRsMk8M2VzB-aR8dOab83Kd3u0mnZt1-F1k6NhZBeEq27XWAn5vIFAtkNIhKrbUdQUe3xpa-Rt1MRF87NhtrKNYVkhEh1AVXfCm6oAHbps07rZwv648m--XGdzFgjNPSktOJp3J9mvHNfWbjJh-zA_1kp3Fc1EsnCdIss.TPnlNzP4wicMUbao3BEq7Q'
+  }
   let time = Date.now()
   const api = new ChatGPTAPIBrowser({
     email,
     password,
     debug: false,
-    minimize: true,
+    minimize: false,
     executablePath: process.env.PATH_CHROME,
     sessionToken,
     clearanceToken
   })
   console.log(new Date(), Date.now() - time, 'ChatGPTAPIBrowser done')
-  try {
-    await api.initSession()
-  } catch (e) {
-    console.log(e)
+  let tryConnect = true
+  while (tryConnect) {
+    console.log('try connect ....')
+    try {
+      console.log(new Date(), 'init step 1', 'initSession')
+      await api.initSession()
+    } catch (e) {
+      console.log(e)
+    }
+    tryConnect = !(await api.getIsAuthenticated())
   }
-  console.log(new Date(), Date.now() - time, 'initSession done')
+  console.log(new Date(), 'init step final', 'success run', Date.now() - time)
 
   sessionToken = api.getSessionToken()
   clearanceToken = api.getClearanceToken()
+
   console.log(
     new Date(),
     Date.now() - time,
@@ -53,71 +63,114 @@ async function main() {
     )
   )
 
-  console.log(new Date(), 'initSession done')
-  const prompt0 =
-    'Write a python version of bubble sort. Do not include example usage.'
-
+  console.log(new Date(), 'send 1', 'alo')
+  // const prompt0 = 'Write a python version of bubble sort. Do not include example usage.'
+  let prompt0 = 'alo'
   let res = await oraPromise(
     api.sendMessage(prompt0, {
-      timeoutMs: 0
-      // onProgress: (result)=>{
-      //   // console.log(new Date(), 'onProgress ', result)
-      // }
+      timeoutMs: 0,
+      onProgress: (result) => {
+        console.log(new Date(), 'send 1', 'alo', 'onProgress', result.response)
+        // console.log(new Date(), 'onProgress ', result)
+      }
     }),
     {
       text: prompt0
     }
   )
-  console.log(new Date(), res.response)
+  console.log(new Date(), 'send 1', 'alo', 'done', res.response)
 
-  const prompt = 'Write a poem about cats.'
+  console.log(new Date(), 'f5 1', 'starting ...')
+  let page = api.getPage()
+  // await page.setCacheEnabled(false);
+  try {
+    await api.refreshSession()
+    // await page.reload({waitUntil: 'networkidle2'});
+  } catch (e) {
+    console.error(e)
+  }
+  console.log(new Date(), 'f5 1', 'done')
+  // await api.resetSession()//load lai trang
+  await api.refreshSession()
 
-  res = await oraPromise(api.sendMessage(prompt), {
-    text: prompt
-  })
-
-  console.log('\n' + res.response + '\n')
-
-  const prompt2 = 'Can you make it cuter and shorter?'
-
+  console.log(new Date(), 'send 1', 'xin chào', 'send')
+  prompt0 = 'xin chào'
   res = await oraPromise(
-    api.sendMessage(prompt2, {
-      conversationId: res.conversationId,
-      parentMessageId: res.messageId
+    api.sendMessage(prompt0, {
+      timeoutMs: 0,
+      onProgress: (result) => {
+        console.log(
+          new Date(),
+          'send 1',
+          'xin chào',
+          'onProgress',
+          result.response
+        )
+      }
     }),
     {
-      text: prompt2
+      text: prompt0
     }
   )
-  console.log('\n' + res.response + '\n')
+  console.log(new Date(), 'send 1', 'xin chào', 'done', res.response)
 
-  const prompt3 = 'Now write it in French.'
+  console.log(new Date(), 'f5 1', 'starting ...')
+  page = api.getPage()
+  // await page.setCacheEnabled(false);
+  try {
+    await page.reload({ waitUntil: 'networkidle2' })
+  } catch (e) {
+    console.error(e)
+  }
+  console.log(new Date(), 'f5 1', 'done')
+  // const prompt = 'Write a poem about cats.'
+  //
+  // res = await oraPromise(api.sendMessage(prompt), {
+  //   text: prompt
+  // })
+  //
+  // console.log('\n' + res.response + '\n')
+  //
+  // const prompt2 = 'Can you make it cuter and shorter?'
+  //
+  // res = await oraPromise(
+  //   api.sendMessage(prompt2, {
+  //     conversationId: res.conversationId,
+  //     parentMessageId: res.messageId
+  //   }),
+  //   {
+  //     text: prompt2
+  //   }
+  // )
+  // console.log('\n' + res.response + '\n')
+  //
+  // const prompt3 = 'Now write it in French.'
+  //
+  // res = await oraPromise(
+  //   api.sendMessage(prompt3, {
+  //     conversationId: res.conversationId,
+  //     parentMessageId: res.messageId
+  //   }),
+  //   {
+  //     text: prompt3
+  //   }
+  // )
+  // console.log('\n' + res.response + '\n')
+  //
+  // const prompt4 = 'What were we talking about again?'
+  //
+  // res = await oraPromise(
+  //   api.sendMessage(prompt4, {
+  //     conversationId: res.conversationId,
+  //     parentMessageId: res.messageId
+  //   }),
+  //   {
+  //     text: prompt4
+  //   }
+  // )
+  // console.log('\n' + res.response + '\n')
 
-  res = await oraPromise(
-    api.sendMessage(prompt3, {
-      conversationId: res.conversationId,
-      parentMessageId: res.messageId
-    }),
-    {
-      text: prompt3
-    }
-  )
-  console.log('\n' + res.response + '\n')
-
-  const prompt4 = 'What were we talking about again?'
-
-  res = await oraPromise(
-    api.sendMessage(prompt4, {
-      conversationId: res.conversationId,
-      parentMessageId: res.messageId
-    }),
-    {
-      text: prompt4
-    }
-  )
-  console.log('\n' + res.response + '\n')
-
-  await api.closeSession()
+  // await api.closeSession()
   // close the browser at the end
   // await api.closeSession()
 }

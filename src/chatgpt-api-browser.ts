@@ -37,6 +37,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
   protected _sessionToken: string
   protected _clearanceToken: string
 
+  private _onProgressStreamChat: {}
+  private receivedSession: boolean
+
   /**
    * Creates a new client for automating the ChatGPT webapp.
    */
@@ -76,6 +79,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
 
     /** @defaultValue `undefined` **/
     clearanceToken?: string
+    receivedSession?: boolean
   }) {
     super()
 
@@ -110,6 +114,8 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
 
     this._sessionToken = sessionToken
     this._clearanceToken = clearanceToken
+    this._onProgressStreamChat = {}
+    this.receivedSession = false
 
     if (!this._email) {
       const error = new types.ChatGPTError('ChatGPT invalid email')
@@ -124,12 +130,16 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
     }
   }
 
+  getPage() {
+    return this._page
+  }
   override async initSession() {
     if (this._browser) {
       await this.closeSession()
     }
 
     try {
+      console.log(new Date(), 'step 2', 'getBrowser')
       this._browser = await getBrowser({
         captchaToken: this._captchaToken,
         nopechaKey: this._nopechaKey,
@@ -170,7 +180,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       this._page.on('request', this._onRequest.bind(this))
       this._page.on('response', this._onResponse.bind(this))
 
+      this.receivedSession = false
       // bypass cloudflare and login
+      console.log(new Date(), 'step 3', 'getOpenAIAuth')
       const authInfo = await getOpenAIAuth({
         email: this._email,
         password: this._password,
@@ -183,6 +195,18 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       })
       this._sessionToken = authInfo.sessionToken
       this._clearanceToken = authInfo.clearanceToken
+
+      await waitFor(() => {
+        return this.receivedSession
+      })
+
+      try {
+        await this._page.exposeFunction('___onProgress', (res) => {
+          this.onStreamChat(res)
+        })
+      } catch (e) {
+        console.error(e)
+      }
     } catch (err) {
       if (this._browser) {
         await this._browser.close()
@@ -261,6 +285,8 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         headers: request.headers(),
         body
       })
+    } else {
+      console.log('request', url)
     }
   }
 
@@ -293,6 +319,8 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
           body: request.postData()
         }
       })
+    } else {
+      console.log('response', url)
     }
 
     if (url.endsWith('/conversation')) {
@@ -308,6 +336,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         const session: types.SessionResult = body
 
         if (session?.accessToken) {
+          this.receivedSession = true
           this._accessToken = session.accessToken
         }
       }
@@ -443,6 +472,19 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
   //   }
   // }
 
+  onStreamChat(res: types.ChatResponse) {
+    try {
+      if (res) {
+        let key = res.id
+        const func = this._onProgressStreamChat[key]
+        if (func) {
+          func(res)
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
   override async sendMessage(
     message: string,
     opts: types.SendMessageOptions = {}
@@ -453,7 +495,6 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       messageId = uuidv4(),
       action = 'next',
       timeoutMs,
-      // TODO
       onProgress
     } = opts
 
@@ -509,12 +550,8 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
           this._page.setDefaultTimeout(0)
         }
         if (onProgress) {
-          // console.log(new Date(), '>>> setting onProgress')
-          // var myFunc = function(res) {
-          //   console.log("lol");
-          //   onProgress(res);
-          // };
-          await this._page.exposeFunction('___onProgress', onProgress)
+          let key = messageId
+          this._onProgressStreamChat[key] = onProgress
         }
 
         result = await this._page.evaluate(
@@ -540,6 +577,11 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         console.warn('chatgpt sendMessage error; retrying...', err.toString())
         await delay(5000)
         continue
+      }
+
+      if (onProgress) {
+        let key = messageId
+        delete this._onProgressStreamChat[key]
       }
 
       if ('error' in result) {
@@ -652,4 +694,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       return false
     }
   }
+}
+
+let waitFor = async function waitFor(f) {
+  while (!f()) await delay(1000)
+  return f()
 }

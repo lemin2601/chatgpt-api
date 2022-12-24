@@ -107,29 +107,36 @@ export async function getOpenAIAuth({
       }
     }
     let hadSendSessionAuth = false
-    const _onResponse = async (response: HTTPResponse) => {
-      const request = response.request()
-      const url = response.url()
-      if (!isRelevantRequest(url)) {
-        return
-      }
-      const status = response.status()
+    // const _onResponse = async (response: HTTPResponse) => {
+    //   const request = response.request()
+    //   const url = response.url()
+    //   if (!isRelevantRequest(url)) {
+    //     return
+    //   }
+    //   const status = response.status()
+    //
+    //   console.log('\nresponse custom', {
+    //     url
+    //   })
+    //   if (
+    //       url === 'https://chat.openai.com/backend-api/conversation' ||
+    //       url === 'https://chat.openai.com/backend-api/models' ||
+    //       url==='https://chat.openai.com/api/auth/session'
+    //   ) {
+    //     if (200 === status || status === 401 || status === 403) {
+    //       hadSendSessionAuth = true
+    //     }
+    //   }
+    // }
+    // page.on('response', _onResponse)
+    console.log(new Date(), 'step 4', 'add listener response')
+    await delay(1000)
 
-      // console.log('\nresponse custom', {
-      //   url
-      // })
-      if (url.endsWith('api/auth/session')) {
-        if (200 === status || status === 401 || status === 403) {
-          hadSendSessionAuth = true
-        }
-      }
-    }
-    page.on('response', _onResponse)
-
+    console.log(new Date(), 'step 4', 'load openai')
     await page.goto('https://chat.openai.com/chat', {
-      // waitUntil: 'networkidle2',
-      waitUntil: 'load'
+      waitUntil: 'networkidle2'
     })
+    console.log(new Date(), 'step 41')
 
     if (
       clearanceToken &&
@@ -150,37 +157,101 @@ export async function getOpenAIAuth({
         }
       ]
       await page.setCookie(...cookiesCache)
+      console.log(new Date(), 'step 42', 'setCookie')
     }
-    const url = await page.url()
-    console.log('url', url)
-
-    console.log('Waiting load browser chat.openai.com')
-    let time = Date.now()
-    await waitFor(() => {
-      if (Date.now() - time > 2 * 60 * 1000) {
-        // throw 'A timeout occurred 524'
-        return true
-      }
-      // console.log(new Date(), 'waitFor', hadSendSessionAuth)
-      return hadSendSessionAuth
-    })
-    console.log('Waiting load browser chat.openai.com done ', Date.now() - time)
-
+    console.log(new Date(), 'step 5')
+    // NOTE: this is where you may encounter a CAPTCHA
     await checkForChatGPTAtCapacity(page, { timeoutMs })
+    console.log(new Date(), 'step 5', 'checkForChatGPTAtCapacity')
 
-    page.off('response', _onResponse)
+    if (hasRecaptchaPlugin) {
+      const captchas = await page.findRecaptchas()
+      console.log(new Date(), 'step 51', 'findRecaptchas')
 
+      if (captchas?.filtered?.length) {
+        console.log('solving captchas using 2captcha...')
+        const res = await page.solveRecaptchas()
+        console.log('captcha result', res)
+      }
+    }
+
+    console.log(new Date(), 'step 52', 'waitForNavigation')
+    await page.waitForNavigation({
+      waitUntil: 'networkidle2',
+      timeout: timeoutMs
+    })
+    console.log(new Date(), 'step 51')
+    const url = await page.url()
+    console.log(new Date(), 'step 6', 'load openai done', url)
+
+    let time = Date.now()
+    let timeTryReloadPage = time
+    let isPassesCloudFlare = false
+
+    //vượt cloudflare trước khi xác nhận api xác thực
+    while (!isPassesCloudFlare) {
+      console.log(new Date(), 'step 6', 'pass cloudflare')
+      const urlAfter = page.url()
+      let isCloudFlare = urlAfter.startsWith(
+        'https://chat.openai.com/chat?__cf_chl_tk'
+      )
+      console.log(
+        new Date(),
+        'step 61',
+        'pass cloudflare wait done',
+        urlAfter,
+        isCloudFlare
+      )
+      if (!isCloudFlare) {
+        isPassesCloudFlare = true
+      } else {
+        let now = Date.now()
+        if (now - timeTryReloadPage > 10 * 1000) {
+          timeTryReloadPage = now
+          console.log(
+            new Date(),
+            'step 621',
+            'tien hanh thu f5 page',
+            page.url()
+          )
+          await page.reload()
+        }
+        console.log(
+          new Date(),
+          'step 62',
+          'wait a minute passed clodflare',
+          page.url()
+        )
+        await delay(4000)
+      }
+    }
+    console.log(new Date(), 'step 8', 'passed cloudflare wait done', page.url())
+    // await waitFor( () => {
+    //   let now = Date.now();
+    //   let offset = now - time;
+    //   if (offset > 2 * 60 * 1000) {
+    //     // throw 'A timeout occurred 524'
+    //     return true
+    //   }
+    //   const url = page.url();
+    //   console.log(new Date(), 'waitFor', hadSendSessionAuth, url);
+    //   return hadSendSessionAuth
+    // })
+    console.log(new Date(), 'step 8', '')
+    await delay(1000)
+    await checkForChatGPTAtCapacity(page, { timeoutMs })
+    console.log(new Date(), 'step 9', '')
+    // page.off('response', _onResponse)
     await delay(1000)
 
     const urlAfter = await page.url()
-    console.log('urlAfter', urlAfter)
+    console.log(new Date(), 'step 10', '', urlAfter)
 
     if (urlAfter.startsWith('https://chat.openai.com/auth/login')) {
       // await page.goto('https://chat.openai.com/auth/login', {
       //   waitUntil: 'networkidle2'
       // })
       console.log('progress login with email & password')
-
       // NOTE: this is where you may encounter a CAPTCHA
       await checkForChatGPTAtCapacity(page, { timeoutMs })
 
@@ -294,7 +365,11 @@ export async function getOpenAIAuth({
         await checkForChatGPTAtCapacity(page, { timeoutMs })
       }
     } else {
-      console.log('progress login with cache token')
+      console.log(new Date(), 'step 11', 'reloading -> refesh token')
+      await page.goto('https://chat.openai.com/chat', {
+        waitUntil: 'networkidle2'
+      })
+      console.log(new Date(), 'step 11', 'reloaded -> refesh token')
     }
 
     const pageCookies = await page.cookies()
@@ -723,7 +798,6 @@ async function waitForRecaptcha(
   }
 }
 
-let sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let waitFor = async function waitFor(f) {
   while (!f()) await delay(1000)
   return f()
