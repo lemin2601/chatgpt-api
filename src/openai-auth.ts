@@ -136,7 +136,7 @@ export async function getOpenAIAuth({
     await page.goto('https://chat.openai.com/chat', {
       waitUntil: 'networkidle2'
     })
-    console.log(new Date(), 'step 41')
+    console.log(new Date(), 'step 41', 'load openai done')
 
     if (
       clearanceToken &&
@@ -159,10 +159,10 @@ export async function getOpenAIAuth({
       await page.setCookie(...cookiesCache)
       console.log(new Date(), 'step 42', 'setCookie')
     }
-    console.log(new Date(), 'step 5')
+    console.log(new Date(), 'step 5', 'checkForChatGPTAtCapacity')
     // NOTE: this is where you may encounter a CAPTCHA
     await checkForChatGPTAtCapacity(page, { timeoutMs })
-    console.log(new Date(), 'step 5', 'checkForChatGPTAtCapacity')
+    console.log(new Date(), 'step 5', 'checkForChatGPTAtCapacity done')
 
     if (hasRecaptchaPlugin) {
       const captchas = await page.findRecaptchas()
@@ -174,8 +174,9 @@ export async function getOpenAIAuth({
         console.log('captcha result', res)
       }
     }
+    await delay(2000)
 
-    console.log(new Date(), 'step 52', 'waitForNavigation')
+    // console.log(new Date(), 'step 52', 'waitForNavigation')
     // await page.waitForNavigation({
     //   waitUntil: 'networkidle2',
     //   timeout: timeoutMs
@@ -188,7 +189,7 @@ export async function getOpenAIAuth({
     let timeTryReloadPage = time
     let isPassesCloudFlare = false
 
-    //vượt cloudflare trước khi xác nhận api xác thực
+    // vượt cloudflare trước khi xác nhận api xác thực
     while (!isPassesCloudFlare) {
       console.log(new Date(), 'step 6', 'pass cloudflare')
       const urlAfter = page.url()
@@ -225,7 +226,7 @@ export async function getOpenAIAuth({
         await delay(4000)
       }
     }
-    console.log(new Date(), 'step 8', 'passed cloudflare wait done', page.url())
+    console.log(new Date(), 'step 7', 'passed cloudflare wait done', page.url())
     // await waitFor( () => {
     //   let now = Date.now();
     //   let offset = now - time;
@@ -237,17 +238,19 @@ export async function getOpenAIAuth({
     //   console.log(new Date(), 'waitFor', hadSendSessionAuth, url);
     //   return hadSendSessionAuth
     // })
-    console.log(new Date(), 'step 8', '')
-    await delay(1000)
+    // console.log(new Date(), 'step 8', '')
+    // await delay(1000)
     await checkForChatGPTAtCapacity(page, { timeoutMs })
-    console.log(new Date(), 'step 9', '')
+    // console.log(new Date(), 'step 9', '')
     // page.off('response', _onResponse)
     await delay(1000)
 
     const urlAfter = await page.url()
-    console.log(new Date(), 'step 10', '', urlAfter)
+    // console.log(new Date(), 'step 10', '', urlAfter)
+    let isLogin = urlAfter === 'https://chat.openai.com/auth/login'
+    console.log(new Date(), 'step 8', 'passed cloudflare wait done', urlAfter)
 
-    if (urlAfter.startsWith('https://chat.openai.com/auth/login')) {
+    if (isLogin) {
       // await page.goto('https://chat.openai.com/auth/login', {
       //   waitUntil: 'networkidle2'
       // })
