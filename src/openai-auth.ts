@@ -106,7 +106,7 @@ export async function getOpenAIAuth({
         await minimizePage(page)
       }
     }
-    let hadSendSessionAuth = false
+    // let hadSendSessionAuth = false
     // const _onResponse = async (response: HTTPResponse) => {
     //   const request = response.request()
     //   const url = response.url()
@@ -176,11 +176,11 @@ export async function getOpenAIAuth({
     }
 
     console.log(new Date(), 'step 52', 'waitForNavigation')
-    await page.waitForNavigation({
-      waitUntil: 'networkidle2',
-      timeout: timeoutMs
-    })
-    console.log(new Date(), 'step 51')
+    // await page.waitForNavigation({
+    //   waitUntil: 'networkidle2',
+    //   timeout: timeoutMs
+    // })
+    // console.log(new Date(), 'step 51')
     const url = await page.url()
     console.log(new Date(), 'step 6', 'load openai done', url)
 
