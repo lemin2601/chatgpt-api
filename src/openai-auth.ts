@@ -58,7 +58,7 @@ export async function getOpenAIAuth({
   password,
   browser,
   page,
-  timeoutMs = 2 * 60 * 1000,
+  timeoutMs = 1 * 60 * 1000,
   isGoogleLogin = false,
   isMicrosoftLogin = false,
   captchaToken = process.env.CAPTCHA_TOKEN,
@@ -365,10 +365,19 @@ export async function getOpenAIAuth({
         await checkForChatGPTAtCapacity(page, { timeoutMs })
       }
     } else {
-      console.log(new Date(), 'step 11', 'reloading -> refesh token')
-      await page.goto('https://chat.openai.com/chat', {
-        waitUntil: 'networkidle2'
-      })
+      if (urlAfter !== 'https://chat.openai.com/chat') {
+        console.log(new Date(), 'step 11', 'reloading -> refesh token')
+        while (true) {
+          try {
+            await page.goto('https://chat.openai.com/chat', {
+              waitUntil: 'networkidle2'
+            })
+            break
+          } catch (e) {
+            console.log(new Date(), 'step 11', 'failed -> try again')
+          }
+        }
+      }
       console.log(new Date(), 'step 11', 'reloaded -> refesh token')
     }
 
