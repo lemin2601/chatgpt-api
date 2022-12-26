@@ -8,6 +8,7 @@ import { fetch } from './fetch'
 import { getBrowser, getOpenAIAuth } from './openai-auth'
 import {
   browserPostEventStream,
+  browserPostJson,
   isRelevantRequest,
   markdownToText,
   maximizePage,
@@ -39,6 +40,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
 
   private _onProgressStreamChat: {}
   private receivedSession: boolean
+  private headers: {}
 
   /**
    * Creates a new client for automating the ChatGPT webapp.
@@ -80,6 +82,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
     /** @defaultValue `undefined` **/
     clearanceToken?: string
     receivedSession?: boolean
+    headers?: {}
   }) {
     super()
 
@@ -116,6 +119,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
     this._clearanceToken = clearanceToken
     this._onProgressStreamChat = {}
     this.receivedSession = false
+    this.headers = {}
 
     if (!this._email) {
       const error = new types.ChatGPTError('ChatGPT invalid email')
@@ -338,6 +342,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         if (session?.accessToken) {
           this.receivedSession = true
           this._accessToken = session.accessToken
+          this.headers = request.headers()
         }
       }
     }
@@ -694,6 +699,100 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       return false
     }
   }
+  async sendGenTitle(input: types.ModerationsJSONBody) {
+    // if(true) return;
+    const conversationId = input.conversation_id
+    const url = `https://chat.openai.com/backend-api/conversation/gen_title/${conversationId}`
+    // {
+    //   "input": "",//2 msg + \n\n
+    //     "model": "text-moderation-playground",
+    //     "conversation_id": "17d5f232-8fd5-4515-bc9a-0bf4adaac396",
+    //     "message_id": "69ebcdc4-cf95-4943-8a21-3901068bbd58"
+    // }
+    const body = {
+      message_id: input.message_id,
+
+      model: 'text-davinci-002-render'
+    }
+    let timeoutMs = 10 * 60 * 1000
+    this._page.setDefaultTimeout(0)
+    let result = await this._page.evaluate(
+      browserPostJson,
+      url,
+      this._accessToken,
+      body,
+      timeoutMs
+    )
+    return result
+  }
+
+  async sendModeration(input: types.ModerationsJSONBody) {
+    // if(true) return;
+    const url = `https://chat.openai.com/backend-api/moderations`
+    // {
+    //   "input": "",//2 msg + \n\n
+    //     "model": "text-moderation-playground",
+    //     "conversation_id": "17d5f232-8fd5-4515-bc9a-0bf4adaac396",
+    //     "message_id": "69ebcdc4-cf95-4943-8a21-3901068bbd58"
+    // }
+    const body = {
+      input: input.input,
+      conversation_id: input.conversation_id,
+      message_id: input.message_id,
+
+      model: 'text-moderation-playground'
+    }
+    let timeoutMs = 10 * 60 * 1000
+    this._page.setDefaultTimeout(0)
+    let result = await this._page.evaluate(
+      browserPostJson,
+      url,
+      this._accessToken,
+      body,
+      timeoutMs
+    )
+    return result
+  }
+  /* async sendModeration(input: types.ModerationsJSONBody) {
+     const accessToken = this._accessToken;
+     const url = `https://chat.openai.com/backend-api/moderations`
+     const headers = {
+       ...this.headers,
+       Authorization: `Bearer ${accessToken}`,
+       Accept: '*!/!*',
+       'Content-Type': 'application/json',
+       Cookie: `cf_clearance=${this._clearanceToken}`
+     }
+
+     const body: types.ModerationsJSONBody = {
+       input: input.input,
+       conversation_id: input.conversation_id,
+       message_id: input.message_id,
+       model: 'text-moderation-playground'
+     }
+
+     if (this._debug) {
+       console.log('POST', url, headers, body)
+     }
+
+     const res = await fetch(url, {
+       method: 'POST',
+       headers,
+       body: JSON.stringify(body)
+     }).then((r) => {
+       if (!r.ok) {
+         const error = new types.ChatGPTError(`${r.status} ${r.statusText}`)
+         error.response = r
+         error.statusCode = r.status
+         error.statusText = r.statusText
+         throw error
+       }
+
+       return r.json() as any as types.ModerationsJSONResult
+     })
+
+     return res
+   }*/
 }
 
 let waitFor = async function waitFor(f) {

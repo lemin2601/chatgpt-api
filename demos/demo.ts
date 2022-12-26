@@ -1,5 +1,6 @@
 import dotenv from 'dotenv-safe'
 import { oraPromise } from 'ora'
+import { v4 as uuidv4 } from 'uuid'
 
 import { ChatGPTAPIBrowser } from '../src'
 
@@ -19,10 +20,11 @@ async function main() {
 
   let { sessionToken, clearanceToken } = {
     clearanceToken:
-      'BBHOprTZe3qoDrerg4owgMz_91OjfSn_PFGURM_lUcg-1671793413-0-1-26d6bae3.222baa73.31ca379-160',
+      'k1DnYQ2Mu.SmE_98hfxCyA0oBLOwEDwe2Il4vNU4BRY-1672020131-0-1-26d6bae3.222baa73.31ca379-160',
     sessionToken:
-      'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..xdxtqIzOXd75fl1G.2K-6WNyLpX__kww1hzRTvsiv7pgj7BB_YOkZratSic5_6HezoaSeA5P0xau8k0xtgyMSrim4ZzdhWvZq5k52xEQlfy26uDJZXhdTUp6U7xtVwkCBbGPXAOIElEQkFj9-LUDWnHgLWetm5mGVUuoB_ggVf1BYUSpIRRkgdIin9OXxicYDvZ1tacoBZ0Kpn6JTH9BZKh12_CyxoddWwjSBuqduG23a_1rvLDWwcddMis4Yv0SWm1FLZP4DGLwpyJ_IXo69eLU9RN2CTx-LHSiEB2qHUXr3PcWQ3LwRO-ttAhtHmJj03eo5FNEB1_skweapwPpSyiTE-gt-whJL4YG_5pigetS-I4fwn1FUEPNVHUJr3xL6TDKroFwZH_K0M2zZ__lNMktq4I8scBSZIFtdeaS1OXJL-pA8YHP_QwlPewQ4i7Vx-oOZbhxTVNXpqOas4Xd-ADC8upm0v_vCPg7Le9DPQse0bKk4enexw-VP9MhB1UQVIa4PVLAyrFnc9nGGUco6yA6YD7HbNhMPYXj4nmFGzmhwPs6XaKkeSFs9WM-kFY36SbEI190f17Js9PdmzWT3wEcppW2Wl4QGoIj3zvGNteXiAqslkEp8bzZG0XLnf5wbDT6YVMKcZH1n1BT7H5BYfAaiMuxj157grZ4h7gF8TeAxWPdKdne8NE5I2OW-zPuT00NHh_wBlnDJbaw2LoT4PgrhI-AvmKjs2xrHZBDtW7ilQA1f4YGR11LU5g2eZk-PVGXqhjMuWTgVCIXsHe1gAjy0dN9USdfcMuulSquMGzglxhciNndpR3DolZe8RiImVD6z7et7JzmbHEY4UyDqvMfrS0Z0diaFE_FzqmBGw6bfTOQM3dGhmUgii1TMgNyWFTyDA6Xdt_UQYrbMVzeE6aSQqh0ffxjc_z8OCv2msAbDryl-agFP_L1kL5c_f1HiNtU_A74byksScnLMkyycV5U9LODAhZhpMGoI1QdWxLfQwOsh9Z-rknMjImqawkd3JWjQGne9mBD5bQIEu0kekbyJm7D4qHhj4hNxG3lqlTq0TIJm3B7bDKe4thZX4yduYV-OmzC4JM3jiSQtisY0wuzHRoAcASVHPb2kMOYx1bVXqhQseWtBIHhth2MJqX9WrBUb9-EWfuPG1FgXow9cGZ1j07Eek5BDzpPqfXA0OfI5eO_MdMbqk7JezvXLwUMvljbU9xWp4R__hCYHXUQ3vw1F0Z7NUihdxM0luMGs9T7BxGDy6LED1SzkzQudpimCvRCMfEgJexaRi5FYCpSiGrDWv17vsJTI8rRuGxYBiFLDU9qva4l9Opx01ow21k6CPgoXGJtGIQwP26HB-geuCziGtHUsPvWUdQv-OntwlYORP-2czBeQUCtYVFFlnZFAeqU8GnhqJDMTGGM3Nt9u7_yP6ch54QSGU0IP4sxhbkX-haXCrT6k6Om39xEZcF9O25nRORPDrtBeLOz-vmsKk5W6bleUIJ26qEwPZ-3WR9HQhHka2IRktSseE6T6jO5FC0Y-WC4rXY4DFeO10KLU5lQNcsCy2rsj08ftxYC6DStUK9fD2FFkI4G1GW4xcKpHuK2xLxv8I53i8APALjka88_DzD3fCLIqwgZFpMASu5CN8w3DrshVSxsWKSQdsbuYi-ERqcyKxH0JwstT5Rb28vZq8ONuZ2CNNxeo4LlCZjEVqJK1ck1LP_BII0PeOvWUP7LZ9TPaTI6AoiaL_-Pd_C5fqZkT17JYixPbteM8wSyTjJSL_DaE6pOsOPNHAs1ZaHdaWFxIJSC5Vs6D643wcEj8WjUeD-iGqcIB27E1w6kfkqU6BsGHbbC3MgYCZHNtlef-SJE10yMAsWnyauLJ2UTq_hgTSPnXkCxxQvG1iXTrLdq6JBjq5BrHYdXSkmXWngiIpxuiOK2uLQFDguF2XQuSJLGNZuzSuqKY0JjUtCx7sDAeskm-1jdXjr3KfgtXcwX5zzdS0YJ-KNN7Xu2HHa9a4TsYgCYLBZB6n0ziKfAkGUIOzmQDfAfyAFv8Czchcnaz4JYfTcApnPFmgG39N-gsLB7aCWN7a77-UYMWk4OGZimsl0vTBInvJzAJ-O21B-XpdnoCnWUIhTkZciMiRRBc-JcdM6b5MjwiZQUdsdSDrlfRtd-2HiVCsR3csM90vWxroSlxV7BdousY_oHOsoQKJsiG0QGn630uysfRsMk8M2VzB-aR8dOab83Kd3u0mnZt1-F1k6NhZBeEq27XWAn5vIFAtkNIhKrbUdQUe3xpa-Rt1MRF87NhtrKNYVkhEh1AVXfCm6oAHbps07rZwv648m--XGdzFgjNPSktOJp3J9mvHNfWbjJh-zA_1kp3Fc1EsnCdIss.TPnlNzP4wicMUbao3BEq7Q'
+      'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..cOqgwVkpvzAWY5V_.sciQlGUoavNe-ErOlb8eFDl3CBwDaIBI8mGDdlkT7H2HbwwCAy6RnJXh16JjdFC19brMOQ3uceZ374qMUpF9wUawS2H-kOv6AuQdyOaQydrZypCQ4SVxG2jQJtMfuLrfIdE1eoNnJmmRmywRZkmeHoK4q9dZXRnGNpHxig2rQQ7rarFFpHmEC9T2jB6YgAXpnDabBUOHJ2WHQc5juCWeulXOqTnUm5UWXwMgCc70YY9gzf4enG6HCM9cN1bW8mFCyFw1JkkwnEDWyx64IXzAl2_H7H3uHieewrsDD0dj9cNoIQO57f7X76ZYqFZvycROvkDgnn89K8V65FeJQtQBVso53DAmTK8Y_N8GAKsfhVjX1uNQrFim7SvtD0sNbdV95XwXFY67SvhV0g1NPXEtBR2KsoJb12MHJ1ckYscNTRxl8ekItfOdQdsQ6yhARzVbdSFjmqmDaCLy0xUyUctagIl2lSQA7445AJG7h1TJK2e9HEehuhRJ2opbdHxrPavXN3pHIcim1N9iIC7I9hiWUNDjO4VWXBnc7G7IwbkN9cUwsnICB5-6hAIkmPt7aO5bGRzI0VWAqzgQha9-zqSjVg0bb4E8rgQd6l4mDt7knBB23B5mLS4L7jDWChV9IwOZuRXIIjv2mdPULDJ55SEoboG7Vgp3pQ2kPLTQFq0qvTjJCnsZDn59TUHMDYeKYDaaSLoX0CzqFxXmMYpVC6yUlvXtR7ObxhckDEZxfki87tHR_H8zp_CqF15Vrjh21hjSUI42Guiofz6Ex2v8JdAgRy5s09bB8JlwprSPo1pQW4A8u3-DraSJmFoRPe5cyWBX4qzQjI39yNEO9mGGeYgJO2tK-QvZBS8BjEKwIA86_BIfVaSVMzy7M45mKocsCGjY9b_Ausk5e-zXQje9pp90Zp5pbAbPKEUBcoYygA0BWUwkI3s-MQ-RLQlgmiOIlZgVens6RyJ7OBGYGTkrcgqOWl6Vb9Pj-8V2UvRzpAJXXZCMq4_tlYWYoDbTHONFn133-J83b3_Qsa6kBiis5MbzKkaR3WQEmMFZfDScGoGFTVyekNohM5cLnk_l85ieNRFyrPjFucD8_27Nx5AOtwORDrk_xF61xOfrykS1eT2gMaTIH7NYSHot5xPDO74F8eUKvn87R6tYQk_tq6JBanclV5r24UQ1DjLAyWN649oA7InDfKFfK07ySKTu6fcQlrS_koKZD7naGMghEv1wi_OD45fxryX_lGMEJXYdORx9HUpKKGIpebiyqNKu6ca0FSTXCEKirxJQqqdM-56qMhDlf0lchqN7seRhFZmGIJ0-JXbqXGJmmm51dhiJNn8rXJd2N3kpqwae6tDsLtQzMgQAn3_3-d3X98qLOKru3UZfwFlgTvkIzVQcLt59Wh_1U0XEvJW1o85U2QUS2IMNO7mQrz6VJ-y4IhJOXrfthZ4cjNWkyzAhxyKpzfwR261bNjq5WCZyGX5NxUDJ7xHhmV0AQvA-ftXXqNes7qr_8ZdV0U8wMfBQqGGsqj9xpCpba9Klge-tXfdXRLHXSC9JBy494bYRRBslzXW0bO3vsTnNom3T_pNwdSeGZeJ-13ooNjpvqWSozrhsuoBA-DEUp_1cESPtR-YUF1pyzxdh1U2d3RQMUFTgviwy_IQd9OfkQOHBCrG0C3rUTuVL2JgbRd7WCarBx0Ht-p3IvH74YYbOaaWvHNywdnLIRlIp8--GEZidN2zoLl3FAwcAjZ3eYMPkQ1xZlQwCd6boVCVu6UrGB-1ehBBBaH8JxJ4ePipXd2y4AGtcvOpXRG4Fu5Ynto4mFFZlkAyKTPZrLY55PI_PXXPL-RKfM3Ohfukat1qlL_wLEZyY0CahB5s05pJIwGNJdVP5p1ppqj0Lo5269gOSPq4V0yzIHnnCa2JqSd2Nuju0jE3NeTAPQvjrgLcKm0Ljl2yaVGswa5a8SdrjNH2vKwi8VnTzyHfFw_hSmIyznjP3myIbCXU7JYJIWZIDMYi-58FvWoLs3GMhHntoxf1GGhkmyR9u1pXFaVPNYUwsWW4KfNWz9aRU1g8nLD_NyslvO6KsQDenZTCUwhg_utuMBWxYAeTdGdXPSSR81GS8JYIfYA47Tx26-5uEuO-0bSbLCMdsNTa64pn1pMQRK9InAKAWzqODAlntTeEJ8jX-d_78E2zsNUf6M8IXuMvjviZOI-D7WBJXQTA38veIjZ0pFRst3oIKhwlzuk5SmGZORvg_8S8fdEW07M-f3C31HpTtEpxcn5-ERU4UWvz0k-EOezPufeEuLqfiiEjHzXVHdohxdJ-JX8juWhZp9yyQUeHdPEiDUUZklFqhuiEGgA0EyYhSxb2KHi_Txz4KLgg.EghbWXpB-jIR0aPyvN0KaA'
   }
+
   let time = Date.now()
   const api = new ChatGPTAPIBrowser({
     email,
@@ -65,12 +67,32 @@ async function main() {
 
   console.log(new Date(), 'send 1', 'alo')
   // const prompt0 = 'Write a python version of bubble sort. Do not include example usage.'
+  // let prompt0 = 'give me source code of Rabin-Karp Search in Java and example explained detail'
   let prompt0 = 'alo'
+  let conversationId
+  let messageId = uuidv4()
+
+  let hadSendModeration = false
   let res = await oraPromise(
     api.sendMessage(prompt0, {
-      timeoutMs: 0,
+      conversationId: conversationId,
+      messageId: messageId,
+      timeoutMs: 10 * 60 * 1000,
       onProgress: (result) => {
-        console.log(new Date(), 'send 1', 'alo', 'onProgress', result.response)
+        if (!hadSendModeration) {
+          hadSendModeration = true
+          api.sendGenTitle({
+            input: prompt0,
+            conversation_id: result.conversationId,
+            message_id: messageId
+          })
+          api.sendModeration({
+            input: prompt0,
+            conversation_id: result.conversationId,
+            message_id: messageId
+          })
+        }
+        // console.log(new Date(), 'send 1', 'alo', 'onProgress', result.response)
         // console.log(new Date(), 'onProgress ', result)
       }
     }),
@@ -78,57 +100,153 @@ async function main() {
       text: prompt0
     }
   )
-  console.log(new Date(), 'send 1', 'alo', 'done', res.response)
+  conversationId = res.conversationId
 
-  console.log(new Date(), 'f5 1', 'starting ...')
-  let page = api.getPage()
-  // await page.setCacheEnabled(false);
-  try {
-    await api.refreshSession()
-    // await page.reload({waitUntil: 'networkidle2'});
-  } catch (e) {
-    console.error(e)
-  }
-  console.log(new Date(), 'f5 1', 'done')
-  // await api.resetSession()//load lai trang
-  await api.refreshSession()
+  // setTimeout(() => {
+  //   api.sendModeration({
+  //     input:prompt0,
+  //     conversation_id: conversationId,
+  //     message_id:messageId,
+  //   });
+  // },10);
+  let sendRep1 = prompt0 + '\n\n' + res.response
 
-  console.log(new Date(), 'send 1', 'xin chào', 'send')
-  prompt0 = 'xin chào'
+  await api.sendModeration({
+    input: sendRep1,
+    conversation_id: conversationId,
+    message_id: res.messageId
+  })
+  messageId = uuidv4()
+  const prompt = 'Write a poem about cats.'
+
+  hadSendModeration = false
   res = await oraPromise(
-    api.sendMessage(prompt0, {
-      timeoutMs: 0,
+    api.sendMessage(prompt, {
+      conversationId: res.conversationId,
+      messageId: res.messageId,
       onProgress: (result) => {
-        console.log(
-          new Date(),
-          'send 1',
-          'xin chào',
-          'onProgress',
-          result.response
-        )
+        if (!hadSendModeration) {
+          hadSendModeration = true
+          api.sendModeration({
+            input: prompt,
+            conversation_id: result.conversationId,
+            message_id: messageId
+          })
+        }
+        // console.log(new Date(), 'send 1', 'alo', 'onProgress', result.response)
+        // console.log(new Date(), 'onProgress ', result)
       }
     }),
     {
-      text: prompt0
+      text: prompt
     }
   )
-  console.log(new Date(), 'send 1', 'xin chào', 'done', res.response)
 
-  console.log(new Date(), 'f5 1', 'starting ...')
-  page = api.getPage()
-  // await page.setCacheEnabled(false);
-  try {
-    await page.reload({ waitUntil: 'networkidle2' })
-  } catch (e) {
-    console.error(e)
-  }
-  console.log(new Date(), 'f5 1', 'done')
+  let remod = await api.sendModeration({
+    input: sendRep1 + '\n\n' + prompt + '\n\n' + res.response,
+    conversation_id: conversationId,
+    message_id: res.messageId
+  })
+  console.log(remod)
+  console.log(remod)
+
+  // let resModeration = await api.sendModeration({
+  //   input: prompt,
+  //   conversation_id: res.conversationId,
+  //   message_id: res.id,
+  // });
+  console.log('\n' + res.response + '\n')
+
+  const prompt2 = 'Can you make it cuter and shorter?'
+
+  res = await oraPromise(
+    api.sendMessage(prompt2, {
+      conversationId: res.conversationId,
+      parentMessageId: res.messageId
+    }),
+    {
+      text: prompt2
+    }
+  )
+  console.log('\n' + res.response + '\n')
+
+  // console.log(new Date(), 'send 1', 'alo', 'done', res.response)
+  // console.log(new Date(), res.response.length)
+  //   console.log(new Date(), 'f5 1', 'starting ...')
+  //   let page = api.getPage()
+  //   // await page.setCacheEnabled(false);
+  //   try {
+  //     await api.refreshSession()
+  //     // await page.reload({waitUntil: 'networkidle2'});
+  //   } catch (e) {
+  //     console.error(e)
+  //   }
+  //   console.log(new Date(), 'f5 1', 'done')
+  //   // await api.resetSession()//load lai trang
+  //   await api.refreshSession()
+  //
+  //   console.log(new Date(), 'send 1', 'xin chào', 'send')
+  //   prompt0 = 'give me source code of Rabin-Karp Search in Java and example explained detail'
+  //   res = await oraPromise(
+  //     api.sendMessage(prompt0, {
+  //       timeoutMs: 0,
+  //       // onProgress: (result) => {
+  //       //   console.log(
+  //       //     new Date(),
+  //       //     'send 1',
+  //       //     'xin chào',
+  //       //     'onProgress',
+  //       //     result.response
+  //       //   )
+  //       // }
+  //     }),
+  //     {
+  //       text: prompt0
+  //     }
+  //   )
+  // const body = {
+  //   input: prompt0,
+  //   conversation_id: res.conversationId,
+  //   message_id: res.id,
+  //   model: 'text-moderation-playground'
+  // }
+  //
+  // let resModeration = await api.sendModeration(body);
+  // console.log(resModeration);
+  //
+  // resModeration = await api.sendModeration({
+  //   input: prompt0 +'\n\n' + res.response,
+  //   conversation_id: res.conversationId,
+  //   message_id: res.messageId,
+  // });
+  // console.log(resModeration);
+  // console.log(resModeration);
+  //   console.log(new Date(), 'send 1', 'xin chào', 'done', res.response)
+  //
+  //   // console.log(new Date(), 'f5 1', 'starting ...')
+  //   // page = api.getPage()
+  //   // // await page.setCacheEnabled(false);
+  //   // try {
+  //   //   await page.reload({ waitUntil: 'networkidle2' })
+  //   // } catch (e) {
+  //   //   console.error(e)
+  //   // }
+  //   // console.log(new Date(), 'f5 1', 'done')
   // const prompt = 'Write a poem about cats.'
   //
-  // res = await oraPromise(api.sendMessage(prompt), {
+  // res = await oraPromise(api.sendMessage(prompt,{
+  //   conversationId:res.conversationId,
+  //   messageId:res.messageId
+  // }), {
   //   text: prompt
   // })
   //
+  //
+  // resModeration = await api.sendModeration({
+  //   input: prompt,
+  //   conversation_id: res.conversationId,
+  //   message_id: res.id,
+  // });
   // console.log('\n' + res.response + '\n')
   //
   // const prompt2 = 'Can you make it cuter and shorter?'

@@ -537,3 +537,44 @@ export async function browserPostEventStream(
     return cancelablePromise as any
   }
 }
+
+/**
+ * This function is injected into the ChatGPT webapp page using puppeteer. It
+ * has to be fully self-contained, so we copied a few third-party sources and
+ * included them in here.
+ */
+export async function browserPostJson(
+  url: string,
+  accessToken: string,
+  body: types.ModerationsJSONBody,
+  timeoutMs?: number,
+  onProgress?: (partialResponse: ChatResponse) => void
+): Promise<void> {
+  // Workaround for https://github.com/esbuild-kit/tsx/issues/113
+  globalThis.__name = () => undefined
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    // signal: abortController?.signal,
+    headers: {
+      accept: '*/*',
+      'x-openai-assistant-app-id': '',
+      authorization: `Bearer ${accessToken}`,
+      'content-type': 'application/json'
+      // authority: 'chat.openai.com',
+      // accept: '*/*',
+      // "accept-language": 'en-US,en;q=0.9,vi;q=0.8',
+      // authorization: `Bearer ${accessToken}`,
+      // "cache-control": "no-cache",
+      // "content-type": "application/json",
+      // 'origin': 'https://chat.openai.com',
+      // 'pragma': 'no-cache',
+      // 'referer': 'https://chat.openai.com/chat',
+      // 'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"',
+      // 'sec-ch-ua-mobile': '?0',
+      // 'sec-fetch-dest': 'empty',
+      // 'sec-fetch-mode': 'cors',
+      // 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    }
+  })
+}
