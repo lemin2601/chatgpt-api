@@ -106,31 +106,47 @@ export async function getOpenAIAuth({
         await minimizePage(page)
       }
     }
-    // let hadSendSessionAuth = false
-    // const _onResponse = async (response: HTTPResponse) => {
-    //   const request = response.request()
-    //   const url = response.url()
-    //   if (!isRelevantRequest(url)) {
-    //     return
-    //   }
-    //   const status = response.status()
-    //
-    //   console.log('\nresponse custom', {
-    //     url
-    //   })
-    //   if (
-    //       url === 'https://chat.openai.com/backend-api/conversation' ||
-    //       url === 'https://chat.openai.com/backend-api/models' ||
-    //       url==='https://chat.openai.com/api/auth/session'
-    //   ) {
-    //     if (200 === status || status === 401 || status === 403) {
-    //       hadSendSessionAuth = true
-    //     }
-    //   }
-    // }
-    // page.on('response', _onResponse)
+
+    //tiến hành vào trang login
+    await page.goto('https://chat.openai.com/auth/login', {
+      waitUntil: 'networkidle2'
+    })
+
+    // NOTE: this is where you may encounter a CAPTCHA
+    await checkForChatGPTAtCapacity(page, { timeoutMs })
+
+    if (hasRecaptchaPlugin) {
+      const captchas = await page.findRecaptchas()
+
+      if (captchas?.filtered?.length) {
+        console.log('solving captchas using 2captcha...')
+        const res = await page.solveRecaptchas()
+        console.log('captcha result', res)
+      }
+    }
+    //vuot capcha nếu bị tracking khi vào login
+
     console.log(new Date(), 'step 4', 'add listener response')
     await delay(1000)
+
+    await waitForConditionOrAtCapacity(page, () =>
+      page.waitForSelector('#__next .btn-primary', { timeout: timeoutMs })
+    )
+    await delay(500)
+
+    // click login button and wait for navigation to finish
+    do {
+      await Promise.all([
+        page.waitForNavigation({
+          waitUntil: 'networkidle2',
+          timeout: timeoutMs
+        }),
+        page.click('#__next .btn-primary')
+      ])
+      await delay(500)
+    } while (page.url().endsWith('/auth/login'))
+
+    await checkForChatGPTAtCapacity(page, { timeoutMs })
 
     console.log(new Date(), 'step 4', 'load openai')
     await page.goto('https://chat.openai.com/chat', {
@@ -333,15 +349,27 @@ export async function getOpenAIAuth({
             await waitForRecaptcha(page, { timeoutMs })
           } else if (hasRecaptchaPlugin) {
             console.log('solving captchas using 2captcha...')
-            const res = await page.solveRecaptchas()
-            if (res.captchas?.length) {
-              console.log('captchas result', res)
-            } else {
-              console.log('no captchas found')
+
+            // Add retries in case network is unstable
+            const retries = 3
+            for (let i = 0; i < retries; i++) {
+              try {
+                const res = await page.solveRecaptchas()
+                if (res.captchas?.length) {
+                  console.log('captchas result', res)
+                  break
+                } else {
+                  console.log('no captchas found')
+                  await delay(500)
+                }
+              } catch (e) {
+                console.log('captcha error', e)
+              }
             }
           }
 
-          await delay(1200)
+          await delay(2000)
+
           const frame = page.mainFrame()
           const submit = await page.waitForSelector('button[type="submit"]', {
             timeout: timeoutMs
