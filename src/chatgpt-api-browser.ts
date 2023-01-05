@@ -320,7 +320,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         }
       })
     } else {
-      console.log('response', url)
+      console.log('response',status, url)
     }
 
     if (url.endsWith('/conversation')) {
