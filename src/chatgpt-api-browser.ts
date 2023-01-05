@@ -199,10 +199,12 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       })
       this._sessionToken = authInfo.sessionToken
       this._clearanceToken = authInfo.clearanceToken
+      console.log(new Date(), 'step 12', 'userAgent', authInfo.userAgent)
 
       await waitFor(() => {
         return this.receivedSession
       })
+      console.log(new Date(), 'step 11', 'receivedSession')
 
       try {
         await this._page.exposeFunction('___onProgress', (res) => {
@@ -222,6 +224,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       throw err
     }
 
+    console.log(new Date(), 'step 13', 'CHAT_PAGE_URL')
     if (!this.isChatPage || this._isGoogleLogin || this._isMicrosoftLogin) {
       await this._page.goto(CHAT_PAGE_URL, {
         waitUntil: 'networkidle2'
@@ -246,10 +249,12 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       await delay(300)
     } while (true)
 
+    console.log(new Date(), 'step 14', 'getIsAuthenticated')
     if (!(await this.getIsAuthenticated())) {
       throw new types.ChatGPTError('Failed to authenticate session')
     }
 
+    console.log(new Date(), 'step 15', 'minimizePage')
     if (this._minimize) {
       return minimizePage(this._page)
     }

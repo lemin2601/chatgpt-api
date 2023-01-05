@@ -469,6 +469,9 @@ export async function getBrowser(
     '--disable-default-apps',
     '--no-zygote',
     '--disable-accelerated-2d-canvas'
+    // '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    // '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/108.0.5359.124 Safari/537.36',
+    // '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.124 Safari/537.36',
     // '--disable-web-security',
     // '--disable-gpu'
     // '--js-flags="--max-old-space-size=1024"'
