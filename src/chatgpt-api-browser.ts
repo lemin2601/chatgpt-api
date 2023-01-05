@@ -329,7 +329,7 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
         }
       })
     } else {
-      console.log('response', url)
+      console.log('response', status, url)
     }
 
     if (url.endsWith('/conversation')) {
@@ -338,7 +338,9 @@ export class ChatGPTAPIBrowser extends AChatGPTAPI {
       }
     } else if (url.endsWith('api/auth/session')) {
       if (status === 401) {
+        console.log('response this.resetSession')
         await this.resetSession()
+        console.log('response this.resetSession done')
       } else if (status === 403) {
         await this.refreshSession()
       } else {
